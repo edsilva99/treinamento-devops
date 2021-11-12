@@ -73,15 +73,49 @@ provider "aws" {
   region = "sa-east-1"
 }
 resource "aws_instance" "web" {
-  subnet_id     = "subnet-05d2f48a5e97f0b1a"
+  for_each = toset(["maq1","maq2","maq3"])
+  subnet_id     = "subnet-0a10a24f36267811f"
   ami= "ami-054a31f1b3bf90920"
+  associate_public_ip_address = true
+  vpc_security_group_ids = ["sg-01203252c323b70b8"]
+  #security_groups = ["sg-01203252c323b70b8"]
+  key_name = "cursogama.pem"
   instance_type = "t2.micro"
   root_block_device {
     encrypted = true
     volume_size = 8
   }
   tags = {
-    Name = "ec2-zerati-tf"
+    Name = "ec2-edsilva-tf-${each.key}"
   }
 }
-# /////
+
+output "instance_ip_add" {
+  value = [
+          for key, item in aws_instance.web:
+                "${item.private_ip} - ${item.public_dns}"
+          ]
+  description = "Mostra os IPs publicos e privados da maquina criada."
+}
+
+
+/////
+
+# provider "aws" {
+#   region = "sa-east-1"
+# }
+# resource "aws_instance" "web" {
+#   count = 01
+#   subnet_id     = "subnet-0a10a24f36267811f"
+#   ami= "ami-054a31f1b3bf90920"
+#   instance_type = "t2.micro"
+#   associate_public_ip_address = true
+#   root_block_device {
+#     encrypted = true
+#     volume_size = 8
+#   }
+#   tags = {
+#     Name = "ec2-tf-edsilva${count.index}"
+#   }
+# }
+
